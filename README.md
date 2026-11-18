@@ -24,4 +24,6 @@ python3 rota_drone.py        # rota do drone vs varredura total
 python3 experimentos.py      # cobertura, falsos positivos e economia
 python3 escalabilidade.py    # tempo x tamanho; gera escalabilidade.png
 python3 gerar_dataset.py     # gera a pasta dataset/
+python3 gerar_lavoura.py     # exemplo 30x30: nodes.csv e edges.csv (Gephi)
+python3 gerar_gexf.py        # exemplo 30x30: lavoura.gexf (Gephi, com posições)
 ```
