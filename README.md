@@ -5,7 +5,7 @@ ligam vizinhas, o peso do nó é a infestação). Os focos de praga são achados
 BFS (componentes conexos) e o drone pulveriza só esses focos.
 
 Trabalho Final de Estruturas em Árvores e Teoria dos Grafos — CEFET-MG.
-Dataset: <LINK_DO_ZENODO>
+Dataset: a implementar
 
 ## Como executar (Ubuntu 24.04)
 
