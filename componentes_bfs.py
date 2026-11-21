@@ -1,7 +1,7 @@
 import numpy as np
 from collections import deque
 
-# --- mesma lavoura simulada do Gephi ---
+# --- lavoura simulada do exemplo 30x30 (a mesma usada no Gephi) ---
 N = 30
 rng = np.random.default_rng(42)
 xs, ys = np.meshgrid(np.arange(N), np.arange(N))
@@ -12,12 +12,18 @@ inf = np.clip(inf + rng.normal(0, 0.03, inf.shape), 0, 1)
 
 
 def achar_focos(inf, limiar):
-    """Devolve uma lista de focos; cada foco é uma lista de células (i, j)."""
-    N = inf.shape[0]
-    visitado = np.zeros((N, N), dtype=bool)
+    """Acha os focos de praga: componentes conexos (BFS) das células com
+    infestação >= limiar, com vizinhança 4-conexa (cima, baixo, esquerda, direita).
+
+    Aceita grades retangulares (linhas x colunas).
+    Devolve uma lista de focos; cada foco é uma lista de células (i, j).
+    Complexidade: O(V + E).
+    """
+    linhas, colunas = inf.shape
+    visitado = np.zeros((linhas, colunas), dtype=bool)
     focos = []
-    for i in range(N):
-        for j in range(N):
+    for i in range(linhas):
+        for j in range(colunas):
             if inf[i, j] >= limiar and not visitado[i, j]:
                 fila = deque([(i, j)])
                 visitado[i, j] = True
@@ -27,7 +33,7 @@ def achar_focos(inf, limiar):
                     foco.append((a, b))
                     for da, db in [(1, 0), (-1, 0), (0, 1), (0, -1)]:
                         c, d = a + da, b + db
-                        if (0 <= c < N and 0 <= d < N
+                        if (0 <= c < linhas and 0 <= d < colunas
                                 and inf[c, d] >= limiar and not visitado[c, d]):
                             visitado[c, d] = True
                             fila.append((c, d))
