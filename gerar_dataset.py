@@ -1,12 +1,24 @@
+"""Gera a base de dados do trabalho: 30 lavouras sintéticas de 60x60 plantas.
+
+Cada arquivo dataset/lavouras_60x60/lavoura_seedXX.csv tem uma linha por planta:
+    linha, coluna, infestacao_verdadeira, infestacao_observada
+A "verdadeira" é a infestação real (soma de focos gaussianos); a "observada" é o
+que o sensor mede (verdade + ruído) e é a única que o algoritmo enxerga.
+
+Os parâmetros são os mesmos de experimentos.py, então os resultados do artigo
+podem ser reproduzidos a partir destes arquivos.
+
+Uso:  python3 gerar_dataset.py
+"""
 import csv
 import os
 import numpy as np
 
 # Mesmos parâmetros do experimentos.py
-N = 60
-K_FOCOS = 6
-RUIDO = 0.08
-SEMENTES = range(30)
+N = 60                   # lavoura N x N
+K_FOCOS = 6              # número de focos reais por lavoura
+RUIDO = 0.08             # desvio-padrão do ruído do sensor
+SEMENTES = range(30)     # uma lavoura por semente
 PASTA = os.path.join("dataset", "lavouras_60x60")
 
 
@@ -16,8 +28,8 @@ def gerar(seed):
     xs, ys = np.meshgrid(np.arange(N), np.arange(N))
     verdade = np.zeros((N, N))
     for _ in range(K_FOCOS):
-        cx, cy = rng.uniform(3, N - 3, 2)
-        r = rng.uniform(2.5, 5)
+        cx, cy = rng.uniform(3, N - 3, 2)    # centro aleatório do foco
+        r = rng.uniform(2.5, 5)              # raio aleatório do foco
         verdade += np.exp(-((xs - cx) ** 2 + (ys - cy) ** 2) / (2 * r ** 2))
     verdade = np.clip(verdade, 0, 1)
     observado = np.clip(verdade + rng.normal(0, RUIDO, verdade.shape), 0, 1)

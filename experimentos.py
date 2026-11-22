@@ -1,3 +1,17 @@
+"""Experimento de qualidade da detecção e economia de distância.
+
+Para cada limiar de detecção, gera 30 lavouras sintéticas de 60x60 plantas e mede:
+  - Focos:         número médio de focos detectados pela BFS;
+  - Área %:        parte da lavoura marcada para pulverização;
+  - Cobertura %:   das plantas realmente infestadas, quantas foram detectadas;
+  - Falsos pos. %: das plantas detectadas, quantas na verdade estavam sadias;
+  - Economia %:    redução da distância voada em relação à varredura total.
+
+O algoritmo só enxerga a infestação "observada" (verdade + ruído do sensor); a
+infestação "verdadeira" serve apenas para avaliar a detecção.
+
+Uso:  python3 experimentos.py
+"""
 import numpy as np
 from componentes_bfs import achar_focos
 from rota_drone import (percurso_no_foco, custo_rota, vizinho_mais_proximo,
@@ -19,21 +33,24 @@ def gerar(seed):
     xs, ys = np.meshgrid(np.arange(N), np.arange(N))
     verdade = np.zeros((N, N))
     for _ in range(K_FOCOS):
-        cx, cy = rng.uniform(3, N - 3, 2)
-        r = rng.uniform(2.5, 5)
+        cx, cy = rng.uniform(3, N - 3, 2)    # centro aleatório do foco
+        r = rng.uniform(2.5, 5)              # raio aleatório do foco
         verdade += np.exp(-((xs - cx) ** 2 + (ys - cy) ** 2) / (2 * r ** 2))
     verdade = np.clip(verdade, 0, 1)
+    # Leitura do sensor = verdade + ruído gaussiano, limitada a [0, 1].
     observado = np.clip(verdade + rng.normal(0, RUIDO, verdade.shape), 0, 1)
     return verdade, observado
 
 
 def distancia_varredura_total():
+    """Distância da linha de base: varrer a lavoura inteira em zigue-zague."""
     v = [(i, j) for i in range(N)
          for j in (range(N) if i % 2 == 0 else range(N - 1, -1, -1))]
     return dist(BASE, v[0]) + comprimento(v) + dist(v[-1], BASE)
 
 
 def fmt(valores):
+    """Formata 'média±desvio-padrão' para a tabela."""
     return f"{np.mean(valores):5.1f}±{np.std(valores):4.1f}"
 
 
@@ -47,24 +64,26 @@ for limiar in LIMIARES:
     n_focos, area, cob, fp, econ = [], [], [], [], []
     for s in SEMENTES:
         verdade, obs = gerar(s)
-        real = verdade >= LIMIAR_REAL
+        real = verdade >= LIMIAR_REAL        # máscara das plantas realmente infestadas
 
+        # BFS sobre a leitura do sensor; descarta focos minúsculos (ruído).
         focos = [f for f in achar_focos(obs, limiar) if len(f) >= MIN_CELULAS]
-        detectado = np.zeros((N, N), dtype=bool)
+        detectado = np.zeros((N, N), dtype=bool)   # máscara das plantas detectadas
         for f in focos:
             for i, j in f:
                 detectado[i, j] = True
 
         n_focos.append(len(focos))
         area.append(100 * detectado.sum() / (N * N))
-        cob.append(100 * (detectado & real).sum() / max(real.sum(), 1))
-        fp.append(100 * (detectado & ~real).sum() / max(detectado.sum(), 1))
+        cob.append(100 * (detectado & real).sum() / max(real.sum(), 1))      # acertos / reais
+        fp.append(100 * (detectado & ~real).sum() / max(detectado.sum(), 1))  # erros / detectadas
 
         if focos:
+            # Distância da rota: zigue-zague em cada foco, na ordem do vizinho mais próximo.
             percursos = [percurso_no_foco(f) for f in focos]
             d = custo_rota(vizinho_mais_proximo(percursos), percursos)
             econ.append(100 * (D_TOTAL - d) / D_TOTAL)
         else:
-            econ.append(100.0)
+            econ.append(100.0)   # nenhum foco: o drone nem precisa sair da base
 
     print(f"{limiar:>6.1f} | {np.mean(n_focos):>5.1f} | {fmt(area)} | {fmt(cob):>12} | {fmt(fp):>13} | {fmt(econ):>11}")

@@ -5,7 +5,7 @@ ligam plantas vizinhas e o peso do vértice é a infestação medida). Os focos 
 são achados por BFS (componentes conexos) e o drone pulveriza só esses focos, em vez
 de varrer a lavoura inteira.
 
-Trabalho Final de Estruturas em Árvores e Teoria dos Grafos — CEFET-MG.
+Trabalho Final de Estruturas em Árvores e Teoria dos Grafos — UFCI-MG.
 
 - Código: https://github.com/Bernardo-Lebron/AEDSII-Trabalho-Final
 - Dataset: https://zenodo.org/records/24342470
@@ -50,3 +50,10 @@ python3 simulador_drone.py                # animação lado a lado (precisa de j
 python3 simulador_drone.py --salvar       # sem janela: imprime o relatório e salva simulador_final.png
 python3 simulador_drone.py --semente 7    # outra lavoura (padrão: 42)
 ```
+
+## Resultados de referência
+
+`dataset/resultados.txt` guarda a saída de `experimentos.py` e `escalabilidade.py`
+usada no artigo. Os tempos de `escalabilidade.py` dependem da máquina (os do artigo
+foram medidos em Ubuntu 24.04, 2 núcleos de CPU, Python 3.13); as demais saídas são
+determinísticas (sementes fixas) e devem ser idênticas em qualquer máquina.
